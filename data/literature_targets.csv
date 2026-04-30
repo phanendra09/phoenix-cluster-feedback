@@ -1,0 +1,14 @@
+quantity,current_status,needed_for,notes
+redshift,incorporated,cosmology/context,McDonald et al. (2012); spectroscopic z=0.596
+cooling_luminosity_erg_s,incorporated,feedback-cooling ratio,McDonald et al. (2012 2019); 0.7-7.0 keV within r<100 kpc
+gas_temperature_keV,incorporated,cooling-time estimate,McDonald et al. (2019) Fig 3; deprojected core 10-30 kpc
+electron_density_cm3,incorporated,cooling-time estimate,McDonald et al. (2019) Fig 3; deprojected r<10 kpc
+cavity_pressure_erg_cm3,incorporated,cavity enthalpy,McDonald et al. (2015); Hlavacek-Larrondo et al. (2015); at ~20 kpc
+cavity_radius_kpc,incorporated,cavity volume (spherical),McDonald et al. (2015); effective spherical equivalent
+cavity_semi_major_kpc,incorporated,cavity volume (ellipsoidal),Hlavacek-Larrondo et al. (2015); projected semi-major axis
+cavity_semi_minor_kpc,incorporated,cavity volume (ellipsoidal),Hlavacek-Larrondo et al. (2015); projected semi-minor axis
+cavity_distance_kpc,incorporated,dynamical age estimates,McDonald et al. (2015); projected separation from BCG
+cavity_age_yr,incorporated,cavity power (fiducial),McDonald et al. (2015); see multi-age analysis for sound/buoyancy/refill
+star_formation_rate_msun_yr,context,interpretation,McDonald et al. (2012 2015); 500-800 Msun/yr UV+IR
+molecular_gas_mass_msun,context,interpretation,Russell et al. (2017); ~2e10 Msun ALMA CO(3-2)
+classical_cooling_rate_msun_yr,context,interpretation,McDonald et al. (2012); ~3800 Msun/yr

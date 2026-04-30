@@ -1,0 +1,81 @@
+{
+  "cluster_name": "SPT-CL J2344-4243 / Phoenix Cluster",
+  "redshift": 0.596,
+
+  "cooling_luminosity_erg_s": {
+    "median": 8.2e45,
+    "sigma_fraction": 0.10,
+    "citation": "McDonald et al. (2012), Nature 488, 349; McDonald et al. (2019), ApJ 885, 63",
+    "aperture_note": "Total X-ray cooling luminosity within r < 100 kpc, 0.7-7.0 keV band",
+    "unit_conversion": "Direct erg/s from X-ray spectral fit"
+  },
+
+  "gas_temperature_keV": {
+    "median": 5.9,
+    "sigma_fraction": 0.12,
+    "citation": "McDonald et al. (2019), ApJ 885, 63, Fig. 3 deprojected profile",
+    "aperture_note": "Deprojected core temperature at r ~ 10-30 kpc",
+    "unit_conversion": "Direct keV from XSPEC fit"
+  },
+
+  "electron_density_cm3": {
+    "median": 0.12,
+    "sigma_fraction": 0.15,
+    "citation": "McDonald et al. (2019), ApJ 885, 63, Fig. 3 deprojected profile",
+    "aperture_note": "Central deprojected electron density within r < 10 kpc",
+    "unit_conversion": "Direct cm^-3 from spectral deprojection"
+  },
+
+  "cavity_pressure_erg_cm3": {
+    "median": 1.5e-9,
+    "sigma_fraction": 0.25,
+    "citation": "McDonald et al. (2015), ApJ 811, 111; Hlavacek-Larrondo et al. (2015), ApJ 805, 35",
+    "aperture_note": "ICM thermal pressure at projected cavity radius (~20 kpc)",
+    "unit_conversion": "p = n_e * kT; converted to erg/cm^3"
+  },
+
+  "cavity_radius_kpc": {
+    "median": 12.0,
+    "sigma_fraction": 0.20,
+    "citation": "McDonald et al. (2015), ApJ 811, 111; Hlavacek-Larrondo et al. (2015), ApJ 805, 35",
+    "aperture_note": "Effective spherical radius of X-ray cavity from Chandra imaging",
+    "unit_conversion": "Direct kpc from angular size at z=0.596"
+  },
+
+  "cavity_geometry": {
+    "semi_major_kpc": {
+      "median": 14.0,
+      "sigma_fraction": 0.20,
+      "citation": "Hlavacek-Larrondo et al. (2015), ApJ 805, 35",
+      "aperture_note": "Projected semi-major axis of ellipsoidal cavity model",
+      "unit_conversion": "Direct kpc from angular size"
+    },
+    "semi_minor_kpc": {
+      "median": 9.0,
+      "sigma_fraction": 0.25,
+      "citation": "Hlavacek-Larrondo et al. (2015), ApJ 805, 35",
+      "aperture_note": "Projected semi-minor axis of ellipsoidal cavity model",
+      "unit_conversion": "Direct kpc from angular size"
+    },
+    "los_axis_note": "Line-of-sight axis assumed c = sqrt(a*b) following Bîrzan et al. (2004)"
+  },
+
+  "cavity_distance_kpc": {
+    "median": 25.0,
+    "sigma_fraction": 0.20,
+    "citation": "McDonald et al. (2015), ApJ 811, 111",
+    "aperture_note": "Projected distance of cavity center from BCG nucleus",
+    "unit_conversion": "Direct kpc from angular separation"
+  },
+
+  "cavity_age_yr": {
+    "median": 2.0e7,
+    "sigma_fraction": 0.35,
+    "citation": "McDonald et al. (2015), ApJ 811, 111",
+    "aperture_note": "Adopted fiducial cavity age; see multi-age analysis for alternatives",
+    "unit_conversion": "Direct years"
+  },
+
+  "n_cavities": 2,
+  "monte_carlo_samples": 50000
+}

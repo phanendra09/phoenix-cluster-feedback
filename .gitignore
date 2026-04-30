@@ -1,0 +1,13 @@
+.julia/
+*.ji
+*.cov
+*.mem
+*.log
+.vscode/
+.idea/
+
+# Track figures for README rendering
+figures/*.pdf
+
+# Track results selectively
+results/*.csv

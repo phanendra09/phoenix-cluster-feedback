@@ -1,0 +1,49 @@
+{
+    "cluster_name": "SPT-CL J2344-4243 / Phoenix Cluster",
+    "ell_buoyancy": {
+        "label": "Ellipsoidal / Buoyancy",
+        "median": 0.5319816323248338,
+        "p16": 0.2505772529406289,
+        "p84": 1.0619254523359867,
+        "p_exceeds_1": 0.18366
+    },
+    "ell_refill": {
+        "label": "Ellipsoidal / Refill",
+        "median": 0.31691337352136684,
+        "p16": 0.18260714431775582,
+        "p84": 0.5159588506745867,
+        "p_exceeds_1": 0.00526
+    },
+    "ell_soundcross": {
+        "label": "Ellipsoidal / Sound-crossing",
+        "median": 0.38588661089325094,
+        "p16": 0.2021727220071828,
+        "p84": 0.692057767699729,
+        "p_exceeds_1": 0.04718
+    },
+    "median_cooling_time_yr": 3.7368193317054725e8,
+    "n_cavities": 2,
+    "n_samples": 50000,
+    "redshift": 0.596,
+    "sph_buoyancy": {
+        "label": "Spherical / Buoyancy",
+        "median": 0.7020221311575603,
+        "p16": 0.2934534857788186,
+        "p84": 1.5229435809054501,
+        "p_exceeds_1": 0.3295
+    },
+    "sph_refill": {
+        "label": "Spherical / Refill",
+        "median": 0.38599579710663695,
+        "p16": 0.20320833142895306,
+        "p84": 0.6661145630384203,
+        "p_exceeds_1": 0.03398
+    },
+    "sph_soundcross": {
+        "label": "Spherical / Sound-crossing",
+        "median": 0.489895410238699,
+        "p16": 0.23103100118833866,
+        "p84": 0.9440035877236143,
+        "p_exceeds_1": 0.13786
+    }
+}

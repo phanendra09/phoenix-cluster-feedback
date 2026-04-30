@@ -1,0 +1,13 @@
+{
+    "assumption_file": "data\\assumptions.json",
+    "cluster_name": "SPT-CL J2344-4243 / Phoenix Cluster",
+    "median_cavity_power_erg_s": 4.038362246334934e45,
+    "median_cooling_time_yr": 3.746835696253281e8,
+    "median_feedback_to_cooling_ratio": 0.4957494172556677,
+    "n_cavities": 2,
+    "n_samples": 50000,
+    "probability_feedback_exceeds_cooling": 0.17284,
+    "ratio_p16": 0.22311052289369585,
+    "ratio_p84": 1.0390989306520733,
+    "redshift": 0.596
+}
