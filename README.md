@@ -351,7 +351,7 @@ The three independent cavity age estimators implemented in this pipeline:
 If you use this pipeline in your research, please cite:
 
 ```bibtex
-@software{phoenix_feedback_2024,
+@software{phoenix_feedback_2026,
   title  = {Phoenix Cluster AGN Feedback Pipeline},
   author = {Phanendra},
   url    = {https://github.com/phanendra09/phoenix-cluster-feedback},
