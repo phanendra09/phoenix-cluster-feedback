@@ -1,14 +1,7 @@
 # Data Notes
 
-`assumptions.json` contains literature-level quantities and uncertainty ranges
-used by the v1 pipeline. Values should be replaced with cited measurements
-before any paper submission.
+`assumptions.json` contains literature-anchored quantities and uncertainty ranges
+used by the Phoenix Cluster AGN feedback pipeline. Every value is traceable to
+a specific published source with aperture metadata and citation information.
 
-Recommended sources to collect:
-
-- Phoenix Cluster redshift and cosmology assumptions
-- Core X-ray luminosity or cooling luminosity
-- Gas temperature and electron density profile
-- Cavity radius, pressure, and buoyancy/sound-crossing age estimates
-- Star-formation rate and molecular gas measurements
-
+See `paper/tables/literature_values.md` for the full citation audit table.

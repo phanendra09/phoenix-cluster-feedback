@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "eea4fed2df54b36391b650694812c2bd383c0c03"
+project_hash = "cf9c69e573de44c5679cbfe9219c1137d966609c"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
@@ -154,6 +154,11 @@ deps = ["Mmap"]
 git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
+
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+version = "1.11.0"
 
 [[deps.DocStringExtensions]]
 git-tree-sha1 = "7442a5dfe1ebb773c29cc2962a8980f47221d76c"
@@ -621,7 +626,7 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.4"
 
 [[deps.PhoenixFeedback]]
-deps = ["CSV", "DataFrames", "Dates", "JSON", "Plots", "Random", "SHA", "Statistics"]
+deps = ["CSV", "DataFrames", "Dates", "JSON", "Plots", "ProgressMeter", "Random", "SHA", "Statistics"]
 path = "."
 uuid = "9a3e59d2-4b5c-4d79-8b2d-6e65fca4f2f1"
 version = "0.1.0"
@@ -706,6 +711,12 @@ version = "3.3.2"
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+version = "1.11.0"
+
+[[deps.ProgressMeter]]
+deps = ["Distributed", "Printf"]
+git-tree-sha1 = "fbb92c6c56b34e1a2c4c36058f68f332bec840e7"
+uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.11.0"
 
 [[deps.PtrArrays]]

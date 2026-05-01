@@ -1,4 +1,4 @@
-﻿include(joinpath(@__DIR__, "..", "src", "PhoenixFeedback.jl"))
+include(joinpath(@__DIR__, "..", "src", "PhoenixFeedback.jl"))
 using .PhoenixFeedback
 using Test
 
@@ -130,5 +130,57 @@ using Test
         grid = run_sensitivity_grid(assumptions; n_points = 5)
         @test length(grid) == 5 * 4  # 5 points x 4 parameters
         @test all(r -> r.feedback_ratio > 0.0, grid)
+    end
+
+    # -- Integration: end-to-end data flow ---------------------------------
+    @testset "Integration: end-to-end data flow" begin
+        assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
+        small = ClusterAssumptions(
+            assumptions.cluster_name,
+            assumptions.redshift,
+            assumptions.cooling_luminosity_erg_s,
+            assumptions.gas_temperature_keV,
+            assumptions.electron_density_cm3,
+            assumptions.cavity_pressure_erg_cm3,
+            assumptions.cavity_radius_kpc,
+            assumptions.cavity_semi_major_kpc,
+            assumptions.cavity_semi_minor_kpc,
+            assumptions.cavity_age_yr,
+            assumptions.cavity_distance_kpc,
+            assumptions.n_cavities,
+            100,
+        )
+
+        # Multi-age MC → summary → expected keys
+        samples = run_multi_age_monte_carlo(small; seed = 42)
+        @test length(samples) == 100
+
+        msummary = summarize_multi_age_samples(samples)
+        for key in ["sph_soundcross", "sph_buoyancy", "sph_refill",
+                     "ell_soundcross", "ell_buoyancy", "ell_refill"]
+            @test haskey(msummary, key)
+            s = msummary[key]
+            @test haskey(s, "label")
+            @test haskey(s, "median")
+            @test haskey(s, "p16")
+            @test haskey(s, "p84")
+            @test haskey(s, "p_exceeds_1")
+            @test 0.0 <= s["p_exceeds_1"] <= 1.0
+            @test s["p16"] <= s["median"] <= s["p84"]
+        end
+        @test haskey(msummary, "median_cooling_time_yr")
+        @test msummary["median_cooling_time_yr"] > 0.0
+
+        # Legacy MC flow
+        legacy_samples = run_monte_carlo(small; seed = 42)
+        @test length(legacy_samples) == 100
+        legacy_summary = summarize_samples(legacy_samples)
+        @test haskey(legacy_summary, "median_feedback_to_cooling_ratio")
+        @test haskey(legacy_summary, "probability_feedback_exceeds_cooling")
+        @test 0.0 <= legacy_summary["probability_feedback_exceeds_cooling"] <= 1.0
+
+        # Sensitivity grid flow
+        grid = run_sensitivity_grid(small; n_points = 5)
+        @test length(grid) == 20
     end
 end

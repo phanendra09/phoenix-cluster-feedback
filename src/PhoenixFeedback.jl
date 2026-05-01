@@ -1,6 +1,7 @@
-﻿module PhoenixFeedback
+module PhoenixFeedback
 
 using JSON
+using ProgressMeter
 using Random
 using Statistics
 
@@ -12,8 +13,6 @@ export ClusterAssumptions,
        feedback_ratio,
        run_monte_carlo,
        summarize_samples,
-       YEAR_TO_SECONDS,
-       # New exports
        spherical_volume_cm3,
        ellipsoidal_volume_cm3,
        cavity_enthalpy_from_volume,
@@ -194,7 +193,9 @@ function run_multi_age_monte_carlo(assumptions::ClusterAssumptions; seed::Intege
     n = assumptions.monte_carlo_samples
     rows = Vector{NamedTuple}(undef, n)
 
+    prog = Progress(n; desc = "Multi-age MC: ", showspeed = true)
     for i in 1:n
+        next!(prog)
         lcool    = _positive_normal(rng, assumptions.cooling_luminosity_erg_s...)
         temp     = _positive_normal(rng, assumptions.gas_temperature_keV...)
         ne       = _positive_normal(rng, assumptions.electron_density_cm3...)
@@ -219,6 +220,8 @@ function run_multi_age_monte_carlo(assumptions::ClusterAssumptions; seed::Intege
         r_eff_ellip = cbrt(a_kpc * b_kpc * c_kpc)
 
         # Three dynamical ages (in seconds)
+        # Sound-crossing age depends only on distance and temperature, not cavity
+        # radius — so it is the same for both spherical and ellipsoidal geometries.
         t_cs     = sound_crossing_time_s(dist, temp)
         
         # Spherical ages
@@ -288,12 +291,6 @@ end
 
 # -- Summarize multi-age samples ----------------------------------------------
 
-function _quantile(values, q)
-    sorted = sort(collect(values))
-    idx = clamp(round(Int, q * (length(sorted) - 1)) + 1, 1, length(sorted))
-    return sorted[idx]
-end
-
 function _ratio_summary(ratios, label)
     return Dict{String, Any}(
         "label"       => label,
@@ -343,7 +340,7 @@ Vary each key parameter by ±50% around its median while holding others fixed.
 Returns a vector of NamedTuples for creating sensitivity tables.
 """
 function run_sensitivity_grid(assumptions::ClusterAssumptions;
-                               n_points::Integer = 7, seed::Integer = 42)
+                               n_points::Integer = 7)
     results = NamedTuple[]
     base_p = assumptions.cavity_pressure_erg_cm3[1]
     base_r = assumptions.cavity_radius_kpc[1]
