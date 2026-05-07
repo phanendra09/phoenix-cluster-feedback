@@ -1,6 +1,39 @@
 include(joinpath(@__DIR__, "..", "src", "PhoenixFeedback.jl"))
 using .PhoenixFeedback
+using JSON
 using Test
+
+# -- Reference values computed deterministically from nominal parameters ------
+function _deterministic_reference()
+    p = 1.5e-9
+    r = 12.0
+    a, b = 14.0, 9.0
+    c = sqrt(a * b)
+    R = 25.0
+    T = 5.9
+    ncav = 2
+    Lcool = 8.2e45
+
+    vol_sph = spherical_volume_cm3(r)
+    vol_ell = ellipsoidal_volume_cm3(a, b, c)
+    r_eff = cbrt(a * b * c)
+    H_sph = cavity_enthalpy_from_volume(p, vol_sph)
+    H_ell = cavity_enthalpy_from_volume(p, vol_ell)
+    t_cs = sound_crossing_time_s(R, T)
+    t_buoy = buoyancy_time_s(R, r, T)
+    t_refill = refill_time_s(r, R, T)
+
+    P_cs = cavity_power_from_enthalpy(H_sph, t_cs; n_cavities = ncav)
+    P_buoy = cavity_power_from_enthalpy(H_sph, t_buoy; n_cavities = ncav)
+
+    return (H_sph = H_sph, H_ell = H_ell, r_eff = r_eff,
+            t_cs_yr = t_cs / PhoenixFeedback.YEAR_TO_SECONDS,
+            t_buoy_yr = t_buoy / PhoenixFeedback.YEAR_TO_SECONDS,
+            t_refill_yr = t_refill / PhoenixFeedback.YEAR_TO_SECONDS,
+            P_sph_cs = P_cs, P_sph_buoy = P_buoy,
+            ratio_cs = feedback_ratio(P_cs, Lcool),
+            ratio_buoy = feedback_ratio(P_buoy, Lcool))
+end
 
 @testset "PhoenixFeedback" begin
 
@@ -10,6 +43,39 @@ using Test
         @test cavity_enthalpy_erg(1.0e-9, 20.0) > 0.0
         @test cavity_power_erg_s(1.0e-9, 20.0, 3.0e7; n_cavities = 2) > 0.0
         @test feedback_ratio(2.0, 4.0) == 0.5
+    end
+
+    @testset "Numerical regression" begin
+        ref = _deterministic_reference()
+        # Sound-crossing time ~ 20 Myr for Phoenix
+        @test ref.t_cs_yr ≈ 2.13e7 rtol = 0.1
+        # Buoyancy time ~ 14 Myr for Phoenix
+        @test ref.t_buoy_yr ≈ 1.37e7 rtol = 0.1
+        # Spherical buoyancy power ~ 6e45 erg/s (McDonald 2015 scale)
+        @test ref.P_sph_buoy ≈ 5.88e45 rtol = 0.2
+        # Sound-crossing ratio ~ 0.5
+        @test ref.ratio_cs ≈ 0.50 rtol = 0.2
+        # Buoyancy ratio ~ 0.72
+        @test ref.ratio_buoy ≈ 0.72 rtol = 0.2
+        @test ref.H_sph > ref.H_ell  # spherical volume > ellipsoidal volume
+        @test ref.r_eff ≈ 11.22 rtol = 0.02
+    end
+
+    @testset "Input validation" begin
+        path = joinpath(@__DIR__, "..", "data", "assumptions.json")
+        raw = JSON.parsefile(path)
+        @test raw["redshift"] > 0.0
+        @test raw["n_cavities"] > 0
+        @test raw["monte_carlo_samples"] > 0
+        for key in ["cooling_luminosity_erg_s", "gas_temperature_keV",
+                     "electron_density_cm3", "cavity_pressure_erg_cm3",
+                     "cavity_radius_kpc", "cavity_age_yr", "cavity_distance_kpc"]
+            b = raw[key]
+            @test b["median"] > 0.0
+            @test 0.0 < b["sigma_fraction"] < 1.0
+        end
+        @test raw["cavity_geometry"]["semi_major_kpc"]["median"] > 0
+        @test raw["cavity_geometry"]["semi_minor_kpc"]["median"] > 0
     end
 
     # -- Geometry ---------------------------------------------------------
@@ -124,12 +190,131 @@ using Test
         @test same_a[1] != different[1]
     end
 
+    @testset "Legacy MC reproducibility" begin
+        assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
+        small = ClusterAssumptions(
+            assumptions.cluster_name, assumptions.redshift,
+            assumptions.cooling_luminosity_erg_s,
+            assumptions.gas_temperature_keV,
+            assumptions.electron_density_cm3,
+            assumptions.cavity_pressure_erg_cm3,
+            assumptions.cavity_radius_kpc,
+            assumptions.cavity_semi_major_kpc,
+            assumptions.cavity_semi_minor_kpc,
+            assumptions.cavity_age_yr,
+            assumptions.cavity_distance_kpc,
+            assumptions.n_cavities, 200,
+        )
+        a = run_monte_carlo(small; seed = 42)
+        b = run_monte_carlo(small; seed = 42)
+        c = run_monte_carlo(small; seed = 99)
+        @test a[1] == b[1]
+        @test a[1] != c[1]
+    end
+
+    @testset "Published-value recovery" begin
+        # Deterministic (no uncertainty) check: with nominal Phoenix inputs,
+        # pipeline should recover McDonald et al. (2015) and
+        # Hlavacek-Larrondo et al. (2015) order-of-magnitude cavity powers.
+        p = 1.5e-9; r = 12.0; R = 25.0; T = 5.9; ncav = 2
+        H = cavity_enthalpy_from_volume(p, spherical_volume_cm3(r))
+        t_buoy = buoyancy_time_s(R, r, T)
+        t_cs   = sound_crossing_time_s(R, T)
+
+        P_buoy = cavity_power_from_enthalpy(H, t_buoy; n_cavities = ncav)
+        P_cs   = cavity_power_from_enthalpy(H, t_cs;   n_cavities = ncav)
+
+        # McDonald 2015: P_cav ~ 1.0e46 (+1.5/-0.4) erg/s, buoyancy
+        @test P_buoy ≈ 1.0e46 rtol = 0.5
+
+        # Hlavacek-Larrondo 2015: P_cav ~ 2-7e45 erg/s, sound-crossing
+        @test 2e45 <= P_cs <= 7e45
+    end
+
     # -- Sensitivity grid -------------------------------------------------
     @testset "Sensitivity grid" begin
         assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
         grid = run_sensitivity_grid(assumptions; n_points = 5)
         @test length(grid) == 5 * 4  # 5 points x 4 parameters
         @test all(r -> r.feedback_ratio > 0.0, grid)
+    end
+
+    @testset "Multi-age sensitivity grid" begin
+        assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
+        grid = run_multi_age_sensitivity_grid(assumptions; n_points = 5)
+        expected = 5 * 5 * 2
+        @test length(grid) == expected
+        @test all(r -> r.feedback_ratio > 0.0, grid)
+        @test all(r -> r.model in ("Sph/Sound", "Sph/Buoyancy"), grid)
+    end
+
+    # -- Two-cavity Monte Carlo --------------------------------------------
+    @testset "Two-cavity Monte Carlo" begin
+        assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
+        cavities = load_cavities(joinpath(@__DIR__, "..", "data", "cavities.json"))
+        @test length(cavities) == 2
+
+        small = ClusterAssumptions(
+            assumptions.cluster_name, assumptions.redshift,
+            assumptions.cooling_luminosity_erg_s,
+            assumptions.gas_temperature_keV,
+            assumptions.electron_density_cm3,
+            assumptions.cavity_pressure_erg_cm3,
+            assumptions.cavity_radius_kpc,
+            assumptions.cavity_semi_major_kpc,
+            assumptions.cavity_semi_minor_kpc,
+            assumptions.cavity_age_yr,
+            assumptions.cavity_distance_kpc,
+            assumptions.n_cavities, 100,
+        )
+        samples = run_two_cavity_monte_carlo(small, cavities; seed = 1)
+        @test length(samples) == 100
+        s = samples[1]
+        @test s.ratio_sph_cs > 0.0
+        @test s.ratio_sph_buoy > 0.0
+        @test s.ratio_ell_cs > 0.0
+        @test s.ratio_ell_buoy > 0.0
+        @test s.proj_factor == 1.0
+
+        # Each ratio should be similar to the representative-cavity case
+        msummary = summarize_two_cavity_samples(samples)
+        @test msummary["n_samples"] == 100
+        @test haskey(msummary["sph_soundcross"], "median")
+
+        # Reproducibility
+        same = run_two_cavity_monte_carlo(small, cavities; seed = 7)
+        same2 = run_two_cavity_monte_carlo(small, cavities; seed = 7)
+        diff = run_two_cavity_monte_carlo(small, cavities; seed = 8)
+        @test same[1] == same2[1]
+        @test same[1] != diff[1]
+    end
+
+    @testset "Projection sensitivity" begin
+        assumptions = load_assumptions(joinpath(@__DIR__, "..", "data", "assumptions.json"))
+        cavities = load_cavities(joinpath(@__DIR__, "..", "data", "cavities.json"))
+        small = ClusterAssumptions(
+            assumptions.cluster_name, assumptions.redshift,
+            assumptions.cooling_luminosity_erg_s,
+            assumptions.gas_temperature_keV,
+            assumptions.electron_density_cm3,
+            assumptions.cavity_pressure_erg_cm3,
+            assumptions.cavity_radius_kpc,
+            assumptions.cavity_semi_major_kpc,
+            assumptions.cavity_semi_minor_kpc,
+            assumptions.cavity_age_yr,
+            assumptions.cavity_distance_kpc,
+            assumptions.n_cavities, 100,
+        )
+        results = run_projection_sensitivity(small, cavities; seed = 42,
+                                              factors = [1.0, 1.5, 2.0])
+        @test length(results) == 3
+        @test results[1]["proj_factor"] == 1.0
+        @test results[2]["proj_factor"] == 1.5
+        @test results[3]["proj_factor"] == 2.0
+        # Higher projection factor → lower ratio (larger distance → larger age → lower power)
+        r1 = results[1]["sph_buoyancy"]["median"]
+        r2 = results[2]["sph_buoyancy"]["median"]
+        @test r2 < r1
     end
 
     # -- Integration: end-to-end data flow ---------------------------------
@@ -182,5 +367,19 @@ using Test
         # Sensitivity grid flow
         grid = run_sensitivity_grid(small; n_points = 5)
         @test length(grid) == 20
+
+        # Multi-age sensitivity grid flow
+        multi_grid = run_multi_age_sensitivity_grid(small; n_points = 5)
+        @test length(multi_grid) == 5 * 5 * 2
+
+        # Two-cavity + projection flow
+        cavities = load_cavities(joinpath(@__DIR__, "..", "data", "cavities.json"))
+        two_cav = run_two_cavity_monte_carlo(small, cavities; seed = 42)
+        @test length(two_cav) == 100
+        tsum = summarize_two_cavity_samples(two_cav)
+        @test haskey(tsum, "sph_soundcross")
+
+        proj = run_projection_sensitivity(small, cavities; seed = 42, factors = [1.0, 2.0])
+        @test length(proj) == 2
     end
 end

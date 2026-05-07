@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env julia
+#!/usr/bin/env julia
 
 using CSV
 using DataFrames
@@ -111,6 +111,49 @@ end
 println("Running sensitivity grid...")
 grid = run_sensitivity_grid(assumptions; n_points = 9)
 CSV.write(joinpath(root, "results", "sensitivity_grid.csv"), DataFrame(grid))
+
+println("Running multi-age sensitivity grid...")
+multi_sens = run_multi_age_sensitivity_grid(assumptions; n_points = 9)
+CSV.write(joinpath(root, "results", "multi_age_sensitivity.csv"), DataFrame(multi_sens))
+
+# -- 3b. Two-cavity Monte Carlo ------------------------------------------------
+cavities_path = joinpath(root, "data", "cavities.json")
+if isfile(cavities_path)
+    println("Running two-cavity Monte Carlo (independent per-cavity sampling)...")
+    cavities = load_cavities(cavities_path)
+    two_cav_samples = run_two_cavity_monte_carlo(assumptions, cavities; seed=seed_override)
+    two_cav_summary = summarize_two_cavity_samples(two_cav_samples)
+    two_cav_summary["cluster_name"] = assumptions.cluster_name
+    two_cav_summary["redshift"] = assumptions.redshift
+
+    CSV.write(joinpath(root, "results", "two_cavity_samples.csv"), DataFrame(two_cav_samples))
+    open(joinpath(root, "results", "two_cavity_summary.json"), "w") do io
+        JSON.print(io, two_cav_summary, 4)
+    end
+
+    # -- 3c. Projection sensitivity --------------------------------------------
+    println("Running projection sensitivity (R_true = R_proj × [1.0, 1.2, 1.5, 2.0])...")
+    proj_results = run_projection_sensitivity(assumptions, cavities; seed = seed_override)
+    proj_rows = NamedTuple[]
+    for ps in proj_results
+        for key in ["sph_soundcross", "sph_buoyancy", "sph_refill",
+                     "ell_soundcross", "ell_buoyancy", "ell_refill"]
+            s = ps[key]
+            push!(proj_rows, (
+                proj_factor = ps["proj_factor"],
+                model = s["label"],
+                median_ratio = s["median"],
+                p16 = s["p16"],
+                p84 = s["p84"],
+                p_exceeds_1 = s["p_exceeds_1"],
+            ))
+        end
+    end
+    CSV.write(joinpath(root, "results", "projection_sensitivity.csv"), DataFrame(proj_rows))
+    open(joinpath(root, "results", "projection_sensitivity.json"), "w") do io
+        JSON.print(io, proj_results, 4)
+    end
+end
 
 # -- 4a. Derived Quantities -----------------------------------------------------
 println("Generating derived quantities...")
@@ -276,6 +319,11 @@ println("  results/multi_age_summary.json")
 println("  results/monte_carlo_samples.csv")
 println("  results/multi_age_samples.csv")
 println("  results/sensitivity_grid.csv")
+println("  results/multi_age_sensitivity.csv")
+println("  results/two_cavity_samples.csv")
+println("  results/two_cavity_summary.json")
+println("  results/projection_sensitivity.csv")
+println("  results/projection_sensitivity.json")
 println("  results/assumption_table.csv")
 println("  results/derived_quantities.csv")
 println("  results/literature_comparison.csv")

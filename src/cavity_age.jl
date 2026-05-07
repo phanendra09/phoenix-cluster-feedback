@@ -18,10 +18,8 @@ where c_s = sqrt(gamma * kT / (mu * m_p)) is the adiabatic sound speed in
 the ICM with gamma = 5/3 and mu = 0.61 (fully ionized plasma).
 """
 function sound_crossing_time_s(distance_kpc::Real, temperature_keV::Real)
-    gamma_gas = 5.0 / 3.0
-    mu = 0.61  # mean molecular weight for fully ionized ICM
     kT_erg = temperature_keV * KEV_TO_ERG
-    c_s = sqrt(gamma_gas * kT_erg / (mu * PROTON_MASS_G))
+    c_s = sqrt(GAMMA_GAS * kT_erg / (MU * PROTON_MASS_G))
     d_cm = distance_kpc * KPC_TO_CM
     return d_cm / c_s
 end
@@ -44,14 +42,12 @@ This simplifies to:
 """
 function buoyancy_time_s(distance_kpc::Real, cavity_radius_kpc::Real,
                           temperature_keV::Real)
-    C_D = 0.75  # drag coefficient (Churazov et al. 2001)
-    mu = 0.61
     kT_erg = temperature_keV * KEV_TO_ERG
     R_cm = distance_kpc * KPC_TO_CM
     r_cm = cavity_radius_kpc * KPC_TO_CM
 
     # Gravitational acceleration assuming isothermal sphere
-    g = 2.0 * kT_erg / (mu * PROTON_MASS_G * R_cm)
+    g = 2.0 * kT_erg / (MU * PROTON_MASS_G * R_cm)
 
     # Cross-section and volume of spherical cavity
     S = pi * r_cm^2
@@ -75,12 +71,11 @@ into the volume vacated by the rising cavity.
 """
 function refill_time_s(cavity_radius_kpc::Real, distance_kpc::Real,
                         temperature_keV::Real)
-    mu = 0.61
     kT_erg = temperature_keV * KEV_TO_ERG
     R_cm = distance_kpc * KPC_TO_CM
     r_cm = cavity_radius_kpc * KPC_TO_CM
 
-    g = 2.0 * kT_erg / (mu * PROTON_MASS_G * R_cm)
+    g = 2.0 * kT_erg / (MU * PROTON_MASS_G * R_cm)
 
     return 2.0 * sqrt(r_cm / g)
 end

@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12'
+      - run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - run: julia --project=. -e 'using Pkg; Pkg.test()'
+      - name: Run pipeline (headless)
+        run: GKSwstype=100 julia --project=. scripts/run_pipeline.jl --quick --seed 42
+  latex:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install TeX Live
+        run: sudo apt-get update && sudo apt-get install -y texlive-publishers texlive-science texlive-latex-extra
+      - name: Build PDF
+        working-directory: paper
+        run: |
+          pdflatex -interaction=nonstopmode manuscript.tex
+          bibtex manuscript
+          pdflatex -interaction=nonstopmode manuscript.tex
+          pdflatex -interaction=nonstopmode manuscript.tex
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuscript.pdf
+          path: paper/manuscript.pdf

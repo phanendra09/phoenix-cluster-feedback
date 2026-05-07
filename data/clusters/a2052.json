@@ -1,0 +1,53 @@
+{
+  "cluster_name": "Abell 2052",
+  "redshift": 0.035,
+  "cooling_luminosity_erg_s": {
+    "median": 3.0e44,
+    "sigma_fraction": 0.15,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "gas_temperature_keV": {
+    "median": 3.0,
+    "sigma_fraction": 0.12,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "electron_density_cm3": {
+    "median": 0.04,
+    "sigma_fraction": 0.15,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "cavity_pressure_erg_cm3": {
+    "median": 2.0e-10,
+    "sigma_fraction": 0.20,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "cavity_radius_kpc": {
+    "median": 8.0,
+    "sigma_fraction": 0.20,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "cavity_geometry": {
+    "semi_major_kpc": {
+      "median": 10.0,
+      "sigma_fraction": 0.20,
+      "citation": "Blanton et al. (2011), ApJ 737, 99"
+    },
+    "semi_minor_kpc": {
+      "median": 6.0,
+      "sigma_fraction": 0.25,
+      "citation": "Blanton et al. (2011), ApJ 737, 99"
+    }
+  },
+  "cavity_distance_kpc": {
+    "median": 12.0,
+    "sigma_fraction": 0.20,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "cavity_age_yr": {
+    "median": 1.5e7,
+    "sigma_fraction": 0.30,
+    "citation": "Blanton et al. (2011), ApJ 737, 99"
+  },
+  "n_cavities": 2,
+  "monte_carlo_samples": 50000
+}

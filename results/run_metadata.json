@@ -1,18 +1,19 @@
 {
     "args": [
+        "--full",
         "--seed",
         "42"
     ],
     "assumption_file_path": "data\\assumptions.json",
     "assumption_file_sha256": "2c2838e817fdd0ed6606f0d47d9b10f85bdf9ab59b4ecfc2d623129d47a578a4",
-    "command": "julia --project=. scripts\\run_pipeline.jl --seed 42",
-    "git_commit": null,
+    "command": "julia --project=. scripts\\run_pipeline.jl --full --seed 42",
+    "git_commit": "96087086d829d9904c72f934056387f6c26d84fd",
     "git_dirty": true,
     "julia_version": "1.12.6",
-    "run_mode": "default",
+    "run_mode": "full",
     "sample_count": 50000,
     "seed": 42,
-    "timestamp_local": "2026-04-30T21:51:57.279",
-    "timestamp_utc": "2026-04-30T16:21:57.102",
+    "timestamp_local": "2026-05-07T01:34:25.403",
+    "timestamp_utc": "2026-05-06T20:04:25.128",
     "timezone": "UTC for timestamp_utc; local system timezone for timestamp_local"
 }

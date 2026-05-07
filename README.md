@@ -110,12 +110,12 @@ graph LR
 
 | Model | Geometry | Age Method | Median Ratio | 16th pctl | 84th pctl | P(≥1) |
 |-------|----------|------------|:------------:|:---------:|:---------:|:-----:|
-| **Sph / Sound** | Spherical | Sound-crossing | 0.49 | 0.23 | 0.94 | 13.8% |
-| **Sph / Buoyancy** | Spherical | Buoyancy rise | **0.70** | 0.29 | 1.52 | **33.0%** |
-| **Sph / Refill** | Spherical | Refill | 0.39 | 0.20 | 0.67 | 3.4% |
-| **Ell / Sound** | Ellipsoidal | Sound-crossing | 0.39 | 0.20 | 0.69 | 4.7% |
-| **Ell / Buoyancy** | Ellipsoidal | Buoyancy rise | 0.53 | 0.25 | 1.06 | 18.4% |
-| **Ell / Refill** | Ellipsoidal | Refill | 0.32 | 0.18 | 0.52 | 0.5% |
+| **Sph / Sound** | Spherical | Sound-crossing | 0.490 | 0.231 | 0.944 | 13.8% |
+| **Sph / Buoyancy** | Spherical | Buoyancy rise | **0.702** | 0.293 | 1.523 | **33.0%** |
+| **Sph / Refill** | Spherical | Refill | 0.386 | 0.203 | 0.666 | 3.4% |
+| **Ell / Sound** | Ellipsoidal | Sound-crossing | 0.386 | 0.202 | 0.692 | 4.7% |
+| **Ell / Buoyancy** | Ellipsoidal | Buoyancy rise | 0.532 | 0.251 | 1.062 | 18.4% |
+| **Ell / Refill** | Ellipsoidal | Refill | 0.317 | 0.183 | 0.516 | 0.5% |
 
 > **Conclusion:** Phoenix Cluster cavity power is comparable to the cooling
 > luminosity but remains below unity for most standard age/geometry assumptions,
@@ -125,7 +125,7 @@ graph LR
 ### Feedback Ratio Distribution (Single-Age, Spherical)
 
 Distribution of the feedback-to-cooling power ratio from the legacy single-age
-spherical Monte Carlo (N = 50,000). The dashed red line marks the ratio = 1
+spherical Monte Carlo (N = 50,000). The dashed line marks the ratio = 1
 balance point.
 
 ![Feedback Ratio Histogram](figures/feedback_ratio_histogram.png)
@@ -152,6 +152,16 @@ Scatter plot of cooling luminosity versus computed cavity power for individual
 Monte Carlo samples (log-log scale), illustrating the correlation structure.
 
 ![Cooling vs Feedback](figures/cooling_vs_feedback.png)
+
+### Cluster Comparison
+
+Feedback-cooling ratio comparison across four well-studied cool-core clusters
+(Phoenix, MS 0735, Perseus, Hydra A) for buoyancy-age and sound-crossing-age
+estimates. Phoenix's ratio is comparable to MS 0735 under buoyancy-age
+assumptions but its extreme absolute cooling rate makes the residual cooling
+far more significant.
+
+![Cluster Comparison](figures/cluster_comparison.png)
 
 ---
 

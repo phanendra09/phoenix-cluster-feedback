@@ -1,0 +1,45 @@
+{
+  "description": "Literature values for comparing Phoenix with other cool-core clusters. Sources: Rafferty et al. (2006), McNamara et al. (2005), Wise et al. (2007), Fabian et al. (2006), McDonald et al. (2012, 2015)",
+  "clusters": [
+    {
+      "name": "Phoenix",
+      "redshift": 0.596,
+      "Lcool_10_45_erg_s": 8.2,
+      "Pcav_Lcool_buoyancy": 0.702,
+      "Pcav_Lcool_sound": 0.490,
+      "SFR_Msun_yr": "500-800",
+      "molecular_gas_10_10_Msun": 2.0,
+      "sources": "McDonald et al. (2012, 2015, 2019)"
+    },
+    {
+      "name": "MS 0735",
+      "redshift": 0.216,
+      "Lcool_10_45_erg_s": 5.0,
+      "Pcav_Lcool_buoyancy": 0.73,
+      "Pcav_Lcool_sound": 0.30,
+      "SFR_Msun_yr": "~10",
+      "molecular_gas_10_10_Msun": null,
+      "sources": "McNamara et al. (2005); Nulsen et al. (2005)"
+    },
+    {
+      "name": "Perseus",
+      "redshift": 0.018,
+      "Lcool_10_45_erg_s": 3.6,
+      "Pcav_Lcool_buoyancy": 0.62,
+      "Pcav_Lcool_sound": 0.28,
+      "SFR_Msun_yr": "~20",
+      "molecular_gas_10_10_Msun": 0.1,
+      "sources": "Fabian et al. (2006)"
+    },
+    {
+      "name": "Hydra A",
+      "redshift": 0.054,
+      "Lcool_10_45_erg_s": 0.48,
+      "Pcav_Lcool_buoyancy": 0.47,
+      "Pcav_Lcool_sound": 0.22,
+      "SFR_Msun_yr": "~5",
+      "molecular_gas_10_10_Msun": null,
+      "sources": "Wise et al. (2007)"
+    }
+  ]
+}

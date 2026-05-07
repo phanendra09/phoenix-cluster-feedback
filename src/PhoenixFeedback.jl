@@ -6,7 +6,9 @@ using Random
 using Statistics
 
 export ClusterAssumptions,
+       CavityParams,
        load_assumptions,
+       load_cavities,
        cooling_time_seconds,
        cavity_enthalpy_erg,
        cavity_power_erg_s,
@@ -22,13 +24,23 @@ export ClusterAssumptions,
        refill_time_s,
        run_multi_age_monte_carlo,
        summarize_multi_age_samples,
-       run_sensitivity_grid
+       run_sensitivity_grid,
+       run_multi_age_sensitivity_grid,
+       run_two_cavity_monte_carlo,
+       summarize_two_cavity_samples,
+       run_projection_sensitivity
 
 # -- Physical constants -------------------------------------------------------
 const KEV_TO_ERG = 1.602176634e-9
 const KPC_TO_CM = 3.0856775814913673e21
 const YEAR_TO_SECONDS = 31_557_600.0
 const PROTON_MASS_G = 1.67262192e-24
+
+# -- ICM / cavity model parameters --------------------------------------------
+const MU = 0.61           # mean molecular weight (fully ionized H/He plasma)
+const C_D = 0.75          # drag coefficient for buoyancy (Churazov et al. 2001)
+const GAMMA_GAS = 5.0/3.0 # adiabatic index for non-relativistic ICM gas
+const GAMMA_CAVITY = 4.0/3.0 # adiabatic index for relativistic cavity plasma
 
 # -- Include sub-modules ------------------------------------------------------
 include("geometry.jl")
@@ -137,12 +149,15 @@ feedback_ratio(power_erg_s::Real, cooling_luminosity_erg_s::Real) =
 
 # -- Sampling utility ---------------------------------------------------------
 
-function _positive_normal(rng::AbstractRNG, mu::Float64, sigma::Float64)
-    value = mu + sigma * randn(rng)
-    while value <= 0.0
+function _positive_normal(rng::AbstractRNG, mu::Float64, sigma::Float64; max_attempts::Int = 100)
+    for _ in 1:max_attempts
         value = mu + sigma * randn(rng)
+        if value > 0.0
+            return value
+        end
     end
-    return value
+    @warn "_positive_normal fallback: returning mean μ=$(mu) after $(max_attempts) attempts (σ=$(sigma) too large)"
+    return mu
 end
 
 # -- Legacy Monte Carlo (backward-compatible) ---------------------------------
@@ -156,6 +171,8 @@ function run_monte_carlo(assumptions::ClusterAssumptions; seed::Integer = 42)
         lcool = _positive_normal(rng, assumptions.cooling_luminosity_erg_s...)
         temp = _positive_normal(rng, assumptions.gas_temperature_keV...)
         ne = _positive_normal(rng, assumptions.electron_density_cm3...)
+        # NOTE: Legacy function — uses independent pressure sampling for backward
+        # compatibility. The multi-age MC uses correlated p = n_e × kT instead.
         pressure = _positive_normal(rng, assumptions.cavity_pressure_erg_cm3...)
         radius = _positive_normal(rng, assumptions.cavity_radius_kpc...)
         age = _positive_normal(rng, assumptions.cavity_age_yr...)
@@ -199,7 +216,11 @@ function run_multi_age_monte_carlo(assumptions::ClusterAssumptions; seed::Intege
         lcool    = _positive_normal(rng, assumptions.cooling_luminosity_erg_s...)
         temp     = _positive_normal(rng, assumptions.gas_temperature_keV...)
         ne       = _positive_normal(rng, assumptions.electron_density_cm3...)
-        pressure = _positive_normal(rng, assumptions.cavity_pressure_erg_cm3...)
+        # Correlated pressure: derive p = n_e × kT, add systematic scatter
+        # for non-thermal pressure support (~10% of nominal)
+        p_derived = ne * temp * KEV_TO_ERG
+        p_sys_sigma = assumptions.cavity_pressure_erg_cm3[1] * 0.10
+        pressure = _positive_normal(rng, p_derived, p_sys_sigma)
         radius   = _positive_normal(rng, assumptions.cavity_radius_kpc...)
         a_kpc    = _positive_normal(rng, assumptions.cavity_semi_major_kpc...)
         b_kpc    = _positive_normal(rng, assumptions.cavity_semi_minor_kpc...)
@@ -380,6 +401,294 @@ function run_sensitivity_grid(assumptions::ClusterAssumptions;
                         feedback_ratio = feedback_ratio(p_l, base_lcool * f)))
     end
 
+    return results
+end
+
+"""
+    run_multi_age_sensitivity_grid(assumptions; n_points=7)
+
+Vary each key parameter by ±50% around its median while holding others fixed,
+computing feedback ratios for the spherical/buoyancy (highest) and
+spherical/sound-crossing (intermediate) models. This captures sensitivity
+across different age estimators, unlike the legacy grid which only tests the
+single-age spherical model.
+"""
+function run_multi_age_sensitivity_grid(assumptions::ClusterAssumptions;
+                                         n_points::Integer = 7)
+    results = NamedTuple[]
+    base_p   = assumptions.cavity_pressure_erg_cm3[1]
+    base_r   = assumptions.cavity_radius_kpc[1]
+    base_dist = assumptions.cavity_distance_kpc[1]
+    base_temp = assumptions.gas_temperature_keV[1]
+    base_lcool = assumptions.cooling_luminosity_erg_s[1]
+    base_ne = assumptions.electron_density_cm3[1]
+    ncav = assumptions.n_cavities
+
+    factors = range(0.5, 2.0, length = n_points)
+
+    # Build a single set of nominal geometry values
+    a_nom = assumptions.cavity_semi_major_kpc[1]
+    b_nom = assumptions.cavity_semi_minor_kpc[1]
+    c_nom = sqrt(a_nom * b_nom)
+    r_eff_ell = cbrt(a_nom * b_nom * c_nom)
+
+    # Pre-compute nominal powers for both age estimators
+    function _nominal_power(age_s, vol_cm3)
+        H = cavity_enthalpy_from_volume(base_p, vol_cm3)
+        return cavity_power_from_enthalpy(H, age_s; n_cavities = ncav)
+    end
+
+    vol_sph = spherical_volume_cm3(base_r)
+    vol_ell = ellipsoidal_volume_cm3(a_nom, b_nom, c_nom)
+    t_cs    = sound_crossing_time_s(base_dist, base_temp)
+    t_buoy  = buoyancy_time_s(base_dist, base_r, base_temp)
+    t_buoy_ell = buoyancy_time_s(base_dist, r_eff_ell, base_temp)
+
+    for f in factors
+        # Vary cavity radius (affects volume cubically, buoyancy age)
+        r_f = base_r * f
+        vol_f = spherical_volume_cm3(r_f)
+        t_buoy_f = buoyancy_time_s(base_dist, r_f, base_temp)
+        p_cs_f  = _nominal_power(t_cs, vol_f)
+        p_buoy_f = cavity_power_from_enthalpy(cavity_enthalpy_from_volume(base_p, vol_f), t_buoy_f; n_cavities = ncav)
+        push!(results, (varied_parameter = "cavity_radius_kpc", model = "Sph/Sound",
+                        factor = f, value = r_f,
+                        feedback_ratio = feedback_ratio(p_cs_f, base_lcool)))
+        push!(results, (varied_parameter = "cavity_radius_kpc", model = "Sph/Buoyancy",
+                        factor = f, value = r_f,
+                        feedback_ratio = feedback_ratio(p_buoy_f, base_lcool)))
+
+        # Vary pressure (linear in enthalpy)
+        p_p = _nominal_power(t_cs, vol_sph)
+        p_buoy_p = _nominal_power(t_buoy, vol_sph)
+        push!(results, (varied_parameter = "cavity_pressure_erg_cm3", model = "Sph/Sound",
+                        factor = f, value = base_p * f,
+                        feedback_ratio = feedback_ratio(p_p * f, base_lcool)))
+        push!(results, (varied_parameter = "cavity_pressure_erg_cm3", model = "Sph/Buoyancy",
+                        factor = f, value = base_p * f,
+                        feedback_ratio = feedback_ratio(p_buoy_p * f, base_lcool)))
+
+        # Vary temperature (affects sound-crossing and buoyancy ages, plus g)
+        temp_f = base_temp * f
+        t_cs_f  = sound_crossing_time_s(base_dist, temp_f)
+        t_buoy_f2 = buoyancy_time_s(base_dist, base_r, temp_f)
+        p_cs_t  = _nominal_power(t_cs_f, vol_sph)
+        p_buoy_t = _nominal_power(t_buoy_f2, vol_sph)
+        push!(results, (varied_parameter = "gas_temperature_keV", model = "Sph/Sound",
+                        factor = f, value = temp_f,
+                        feedback_ratio = feedback_ratio(p_cs_t, base_lcool)))
+        push!(results, (varied_parameter = "gas_temperature_keV", model = "Sph/Buoyancy",
+                        factor = f, value = temp_f,
+                        feedback_ratio = feedback_ratio(p_buoy_t, base_lcool)))
+
+        # Vary cavity distance (affects sound-crossing and buoyancy ages)
+        dist_f = base_dist * f
+        t_cs_d  = sound_crossing_time_s(dist_f, base_temp)
+        t_buoy_d = buoyancy_time_s(dist_f, base_r, base_temp)
+        p_cs_d  = _nominal_power(t_cs_d, vol_sph)
+        p_buoy_d = _nominal_power(t_buoy_d, vol_sph)
+        push!(results, (varied_parameter = "cavity_distance_kpc", model = "Sph/Sound",
+                        factor = f, value = dist_f,
+                        feedback_ratio = feedback_ratio(p_cs_d, base_lcool)))
+        push!(results, (varied_parameter = "cavity_distance_kpc", model = "Sph/Buoyancy",
+                        factor = f, value = dist_f,
+                        feedback_ratio = feedback_ratio(p_buoy_d, base_lcool)))
+
+        # Vary cooling luminosity (inverse, no effect on power)
+        push!(results, (varied_parameter = "cooling_luminosity_erg_s", model = "Sph/Sound",
+                        factor = f, value = base_lcool * f,
+                        feedback_ratio = feedback_ratio(_nominal_power(t_cs, vol_sph), base_lcool * f)))
+        push!(results, (varied_parameter = "cooling_luminosity_erg_s", model = "Sph/Buoyancy",
+                        factor = f, value = base_lcool * f,
+                        feedback_ratio = feedback_ratio(_nominal_power(t_buoy, vol_sph), base_lcool * f)))
+    end
+
+    return results
+end
+
+# ==============================================================================
+# Two-cavity + projection sensitivity
+# ==============================================================================
+
+"""
+    CavityParams
+
+Individual cavity properties used in the two-cavity Monte Carlo.
+Each cavity is sampled independently: radius, pressure, distance,
+temperature, and ellipsoidal axes.
+"""
+struct CavityParams
+    id::String
+    location::String
+    radius_kpc::Tuple{Float64, Float64}
+    semi_major_kpc::Tuple{Float64, Float64}
+    semi_minor_kpc::Tuple{Float64, Float64}
+    pressure_erg_cm3::Tuple{Float64, Float64}
+    distance_kpc::Tuple{Float64, Float64}
+    temperature_keV::Tuple{Float64, Float64}
+end
+
+function _cavity_value_sigma(block)
+    median_val = Float64(block["median"])
+    sigma = abs(median_val * Float64(block["sigma_fraction"]))
+    return (median_val, sigma)
+end
+
+function load_cavities(path::AbstractString)::Vector{CavityParams}
+    raw = JSON.parsefile(path)
+    cavities = Vector{CavityParams}(undef, length(raw["cavities"]))
+    for (i, c) in enumerate(raw["cavities"])
+        cavities[i] = CavityParams(
+            c["id"],
+            c["location"],
+            _cavity_value_sigma(c["radius_kpc"]),
+            _cavity_value_sigma(c["semi_major_kpc"]),
+            _cavity_value_sigma(c["semi_minor_kpc"]),
+            _cavity_value_sigma(c["pressure_erg_cm3"]),
+            _cavity_value_sigma(c["distance_kpc"]),
+            _cavity_value_sigma(c["temperature_keV"]),
+        )
+    end
+    return cavities
+end
+
+"""
+    run_two_cavity_monte_carlo(assumptions, cavities; seed=42, proj_factor=1.0)
+
+Run Monte Carlo sampling where each cavity is modeled independently.
+For each sample:
+  1. Draw global L_cool, n_e
+  2. For each cavity, draw its own radius, pressure, distance, temperature, axes
+  3. Compute enthalpy, three ages × two geometries per cavity
+  4. Sum cavity powers → total P for each (age, geometry) combination
+  5. Ratio = total_P / L_cool
+
+`proj_factor` corrects the projected distance: R_true = R_proj * proj_factor.
+"""
+function run_two_cavity_monte_carlo(assumptions::ClusterAssumptions,
+                                      cavities::Vector{CavityParams};
+                                      seed::Integer = 42,
+                                      proj_factor::Real = 1.0)
+    rng = MersenneTwister(seed)
+    n = assumptions.monte_carlo_samples
+    rows = Vector{NamedTuple}(undef, n)
+
+    prog = Progress(n; desc = "Two-cavity MC: ", showspeed = true)
+    for i in 1:n
+        next!(prog)
+        lcool = _positive_normal(rng, assumptions.cooling_luminosity_erg_s...)
+        ne    = _positive_normal(rng, assumptions.electron_density_cm3...)
+
+        # Accumulate total powers per (age, geometry) combination.
+        # NOTE: Each cavity's power is H/t (not multiplied by n_cavities),
+        # because we sum over individual cavities explicitly. This differs
+        # from run_multi_age_monte_carlo, which uses a single representative
+        # cavity and multiplies by n_cavities.
+        P_cs_sph   = 0.0
+        P_buoy_sph = 0.0
+        P_ref_sph  = 0.0
+        P_cs_ell   = 0.0
+        P_buoy_ell = 0.0
+        P_ref_ell  = 0.0
+
+        T_sampled = Float64[]  # store sampled temperatures for cooling time
+
+        for cav in cavities
+            r  = _positive_normal(rng, cav.radius_kpc...)
+            a  = _positive_normal(rng, cav.semi_major_kpc...)
+            b  = _positive_normal(rng, cav.semi_minor_kpc...)
+            c  = sqrt(a * b)
+            # Correlated pressure: derive from sampled n_e and T
+            T  = _positive_normal(rng, cav.temperature_keV...)
+            p_derived = ne * T * KEV_TO_ERG
+            p_sys_sigma = cav.pressure_erg_cm3[1] * 0.10
+            p  = _positive_normal(rng, p_derived, p_sys_sigma)
+            d  = _positive_normal(rng, cav.distance_kpc...) * proj_factor
+            r_eff = cbrt(a * b * c)
+
+            push!(T_sampled, T)
+
+            vol_sph = spherical_volume_cm3(r)
+            vol_ell = ellipsoidal_volume_cm3(a, b, c)
+            H_sph = cavity_enthalpy_from_volume(p, vol_sph)
+            H_ell = cavity_enthalpy_from_volume(p, vol_ell)
+
+            t_cs = sound_crossing_time_s(d, T)
+            t_buoy_sph = buoyancy_time_s(d, r, T)
+            t_ref_sph  = refill_time_s(r, d, T)
+            t_buoy_ell = buoyancy_time_s(d, r_eff, T)
+            t_ref_ell  = refill_time_s(r_eff, d, T)
+
+            P_cs_sph   += H_sph / t_cs
+            P_buoy_sph += H_sph / t_buoy_sph
+            P_ref_sph  += H_sph / t_ref_sph
+            P_cs_ell   += H_ell / t_cs
+            P_buoy_ell += H_ell / t_buoy_ell
+            P_ref_ell  += H_ell / t_ref_ell
+        end
+
+        # Use mean of sampled (not nominal) temperatures for cooling time
+        tcool_s = cooling_time_seconds(mean(T_sampled), ne)
+
+        rows[i] = (
+            cooling_luminosity_erg_s = lcool,
+            electron_density_cm3 = ne,
+            cooling_time_yr = tcool_s / YEAR_TO_SECONDS,
+            proj_factor = Float64(proj_factor),
+            P_sph_soundcross = P_cs_sph,
+            P_sph_buoyancy   = P_buoy_sph,
+            P_sph_refill     = P_ref_sph,
+            P_ell_soundcross = P_cs_ell,
+            P_ell_buoyancy   = P_buoy_ell,
+            P_ell_refill     = P_ref_ell,
+            ratio_sph_cs     = feedback_ratio(P_cs_sph, lcool),
+            ratio_sph_buoy   = feedback_ratio(P_buoy_sph, lcool),
+            ratio_sph_refill = feedback_ratio(P_ref_sph, lcool),
+            ratio_ell_cs     = feedback_ratio(P_cs_ell, lcool),
+            ratio_ell_buoy   = feedback_ratio(P_buoy_ell, lcool),
+            ratio_ell_refill = feedback_ratio(P_ref_ell, lcool),
+        )
+    end
+    return rows
+end
+
+"""
+    summarize_two_cavity_samples(samples)
+
+Summarize the two-cavity Monte Carlo output with the same schema as
+`summarize_multi_age_samples` for drop-in comparison.
+"""
+function summarize_two_cavity_samples(samples)
+    return Dict(
+        "n_samples"          => length(samples),
+        "proj_factor"        => samples[1].proj_factor,
+        "sph_soundcross"     => _ratio_summary([r.ratio_sph_cs     for r in samples], "Spherical / Sound-crossing"),
+        "sph_buoyancy"       => _ratio_summary([r.ratio_sph_buoy   for r in samples], "Spherical / Buoyancy"),
+        "sph_refill"         => _ratio_summary([r.ratio_sph_refill for r in samples], "Spherical / Refill"),
+        "ell_soundcross"     => _ratio_summary([r.ratio_ell_cs     for r in samples], "Ellipsoidal / Sound-crossing"),
+        "ell_buoyancy"       => _ratio_summary([r.ratio_ell_buoy   for r in samples], "Ellipsoidal / Buoyancy"),
+        "ell_refill"         => _ratio_summary([r.ratio_ell_refill for r in samples], "Ellipsoidal / Refill"),
+        "median_cooling_time_yr" => median([r.cooling_time_yr for r in samples]),
+    )
+end
+
+"""
+    run_projection_sensitivity(assumptions, cavities; seed=42)
+
+Run the two-cavity Monte Carlo at several projection correction factors
+R_true = R_proj × factor, where factor ∈ [1.0, 1.2, 1.5, 2.0].
+Returns a vector of summaries, one per factor.
+"""
+function run_projection_sensitivity(assumptions::ClusterAssumptions,
+                                     cavities::Vector{CavityParams};
+                                     seed::Integer = 42,
+                                     factors::Vector{<:Real} = [1.0, 1.2, 1.5, 2.0])
+    results = []
+    for f in factors
+        samples = run_two_cavity_monte_carlo(assumptions, cavities; seed = seed, proj_factor = f)
+        summary = summarize_two_cavity_samples(samples)
+        push!(results, summary)
+    end
     return results
 end
 

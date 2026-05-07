@@ -1,0 +1,53 @@
+{
+  "cluster_name": "Perseus / Abell 426",
+  "redshift": 0.018,
+  "cooling_luminosity_erg_s": {
+    "median": 3.6e45,
+    "sigma_fraction": 0.15,
+    "citation": "Fabian et al. (2006), MNRAS 366, 417"
+  },
+  "gas_temperature_keV": {
+    "median": 4.5,
+    "sigma_fraction": 0.10,
+    "citation": "Fabian et al. (2006), MNRAS 366, 417"
+  },
+  "electron_density_cm3": {
+    "median": 0.05,
+    "sigma_fraction": 0.15,
+    "citation": "Fabian et al. (2006), MNRAS 366, 417"
+  },
+  "cavity_pressure_erg_cm3": {
+    "median": 4.0e-10,
+    "sigma_fraction": 0.20,
+    "citation": "Rafferty et al. (2006), ApJ 652, 216"
+  },
+  "cavity_radius_kpc": {
+    "median": 12.5,
+    "sigma_fraction": 0.15,
+    "citation": "Rafferty et al. (2006), ApJ 652, 216"
+  },
+  "cavity_geometry": {
+    "semi_major_kpc": {
+      "median": 14.0,
+      "sigma_fraction": 0.15,
+      "citation": "Rafferty et al. (2006), ApJ 652, 216"
+    },
+    "semi_minor_kpc": {
+      "median": 10.0,
+      "sigma_fraction": 0.20,
+      "citation": "Rafferty et al. (2006), ApJ 652, 216"
+    }
+  },
+  "cavity_distance_kpc": {
+    "median": 20.0,
+    "sigma_fraction": 0.15,
+    "citation": "Rafferty et al. (2006), ApJ 652, 216"
+  },
+  "cavity_age_yr": {
+    "median": 1.2e7,
+    "sigma_fraction": 0.30,
+    "citation": "Birzan et al. (2004), ApJ 607, 800"
+  },
+  "n_cavities": 2,
+  "monte_carlo_samples": 50000
+}
