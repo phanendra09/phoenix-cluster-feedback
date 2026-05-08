@@ -110,12 +110,12 @@ graph LR
 
 | Model | Geometry | Age Method | Median Ratio | 16th pctl | 84th pctl | P(≥1) |
 |-------|----------|------------|:------------:|:---------:|:---------:|:-----:|
-| **Sph / Sound** | Spherical | Sound-crossing | 0.490 | 0.231 | 0.944 | 13.8% |
-| **Sph / Buoyancy** | Spherical | Buoyancy rise | **0.702** | 0.293 | 1.523 | **33.0%** |
-| **Sph / Refill** | Spherical | Refill | 0.386 | 0.203 | 0.666 | 3.4% |
-| **Ell / Sound** | Ellipsoidal | Sound-crossing | 0.386 | 0.202 | 0.692 | 4.7% |
-| **Ell / Buoyancy** | Ellipsoidal | Buoyancy rise | 0.532 | 0.251 | 1.062 | 18.4% |
-| **Ell / Refill** | Ellipsoidal | Refill | 0.317 | 0.183 | 0.516 | 0.5% |
+| **Sph / Sound** | Spherical | Sound-crossing | 0.371 | 0.176 | 0.719 | 6.3% |
+| **Sph / Buoyancy** | Spherical | Buoyancy rise | **0.534** | 0.222 | 1.157 | **21.4%** |
+| **Sph / Refill** | Spherical | Refill | 0.292 | 0.155 | 0.510 | 0.9% |
+| **Ell / Sound** | Ellipsoidal | Sound-crossing | 0.292 | 0.153 | 0.528 | 1.5% |
+| **Ell / Buoyancy** | Ellipsoidal | Buoyancy rise | 0.403 | 0.189 | 0.809 | 9.5% |
+| **Ell / Refill** | Ellipsoidal | Refill | 0.240 | 0.138 | 0.394 | 0.1% |
 
 > **Conclusion:** Phoenix Cluster cavity power is comparable to the cooling
 > luminosity but remains below unity for most standard age/geometry assumptions,
