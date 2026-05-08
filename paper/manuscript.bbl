@@ -1,0 +1,93 @@
+\begin{thebibliography}{}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\href{#1}{#1}}
+\providecommand{\dodoi}[1]{doi:~\href{http://doi.org/#1}{\nolinkurl{#1}}}
+\providecommand{\doeprint}[1]{\href{http://ascl.net/#1}{\nolinkurl{http://ascl.net/#1}}}
+\providecommand{\doarXiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{https://arxiv.org/abs/#1}}}
+
+\bibitem[{B{\^\i}rzan {et~al.}(2004)B{\^\i}rzan, Rafferty, McNamara, Wise, \&
+  Nulsen}]{Birzan2004}
+B{\^\i}rzan, L., Rafferty, D.~A., McNamara, B.~R., Wise, M.~W., \& Nulsen, P.
+  E.~J. 2004, ApJ, 607, 800, \dodoi{10.1086/383519}
+
+\bibitem[{Churazov {et~al.}(2001)Churazov, Br\"uggen, Kaiser, B\"ohringer, \&
+  Forman}]{Churazov2001}
+Churazov, E., Br\"uggen, M., Kaiser, C.~R., B\"ohringer, H., \& Forman, W.
+  2001, ApJ, 554, 261, \dodoi{10.1086/321357}
+
+\bibitem[{Dunn \& Fabian(2006)}]{DunnFabian2006}
+Dunn, R. J.~H., \& Fabian, A.~C. 2006, MNRAS, 373, 959,
+  \dodoi{10.1111/j.1365-2966.2006.11095.x}
+
+\bibitem[{Fabian {et~al.}(2006)Fabian, Sanders, Taylor, Allen, Crawford,
+  Ebeling, \& Johnstone}]{Fabian2006}
+Fabian, A.~C., Sanders, J.~S., Taylor, G.~B., {et~al.} 2006, MNRAS, 366, 417,
+  \dodoi{10.1111/j.1365-2966.2005.09896.x}
+
+\bibitem[{Fabian {et~al.}(2017)Fabian, Walker, Russell, Pinto, Sanders, \&
+  Reynolds}]{Fabian2017}
+Fabian, A.~C., Walker, S.~A., Russell, H.~R., {et~al.} 2017, MNRAS, 466, 118,
+  \dodoi{10.1093/mnras/stw3078}
+
+\bibitem[{Gaspari {et~al.}(2013)Gaspari, Ruszkowski, \& Oh}]{Gaspari2013}
+Gaspari, M., Ruszkowski, M., \& Oh, S.~P. 2013, MNRAS, 432, 3401,
+  \dodoi{10.1093/mnras/stt692}
+
+\bibitem[{Hlavacek-Larrondo {et~al.}(2015)Hlavacek-Larrondo, McDonald, Benson,
+  {et~al.}}]{Hlavacek-Larrondo2015}
+Hlavacek-Larrondo, J., McDonald, M., Benson, B.~A., {et~al.} 2015, ApJ, 805,
+  35, \dodoi{10.1088/0004-637X/805/1/35}
+
+\bibitem[{McDonald {et~al.}(2012)McDonald, Benson, Veilleux, Bautz, \&
+  Reichardt}]{McDonald2012}
+McDonald, M., Benson, B.~A., Veilleux, S., Bautz, M.~W., \& Reichardt, C.~L.
+  2012, Nature, 488, 349, \dodoi{10.1038/nature11379}
+
+\bibitem[{McDonald {et~al.}(2018)McDonald, Gaspari, Hlavacek-Larrondo,
+  {et~al.}}]{McDonald2018}
+McDonald, M., Gaspari, M., Hlavacek-Larrondo, J., {et~al.} 2018, ApJ, 858, 22,
+  \dodoi{10.3847/1538-4357/aab9af}
+
+\bibitem[{McDonald {et~al.}(2015)McDonald, McNamara, van Weeren,
+  {et~al.}}]{McDonald2015}
+McDonald, M., McNamara, B.~R., van Weeren, R.~J., {et~al.} 2015, ApJ, 811, 111,
+  \dodoi{10.1088/0004-637X/811/2/111}
+
+\bibitem[{McDonald {et~al.}(2019)McDonald, McNamara, Voit,
+  {et~al.}}]{McDonald2019}
+McDonald, M., McNamara, B.~R., Voit, G.~M., {et~al.} 2019, ApJ, 885, 63,
+  \dodoi{10.3847/1538-4357/ab464c}
+
+\bibitem[{McNamara \& Nulsen(2007)}]{McNamara2007}
+McNamara, B.~R., \& Nulsen, P. E.~J. 2007, ARA\&A, 45, 117,
+  \dodoi{10.1146/annurev.astro.45.051806.110625}
+
+\bibitem[{McNamara {et~al.}(2005)McNamara, Nulsen, Wise,
+  {et~al.}}]{McNamara2005}
+McNamara, B.~R., Nulsen, P. E.~J., Wise, M.~W., {et~al.} 2005, Nature, 433, 45,
+  \dodoi{10.1038/nature03203}
+
+\bibitem[{Nulsen {et~al.}(2005)Nulsen, McNamara, Wise, \& David}]{Nulsen2005}
+Nulsen, P. E.~J., McNamara, B.~R., Wise, M.~W., \& David, L.~P. 2005, ApJ, 627,
+  700, \dodoi{10.1086/430645}
+
+\bibitem[{Rafferty {et~al.}(2006)Rafferty, McNamara, Nulsen, \&
+  Wise}]{Rafferty2006}
+Rafferty, D.~A., McNamara, B.~R., Nulsen, P. E.~J., \& Wise, M.~W. 2006, ApJ,
+  652, 216, \dodoi{10.1086/507438}
+
+\bibitem[{Russell {et~al.}(2017)Russell, McDonald, McNamara,
+  {et~al.}}]{Russell2017}
+Russell, H.~R., McDonald, M., McNamara, B.~R., {et~al.} 2017, ApJ, 836, 130,
+  \dodoi{10.3847/1538-4357/836/1/130}
+
+\bibitem[{Voit {et~al.}(2015)Voit, Donahue, Glines, {et~al.}}]{Voit2015}
+Voit, G.~M., Donahue, M., Glines, A., {et~al.} 2015, ApJ, 803, L21,
+  \dodoi{10.1088/2041-8205/803/1/L21}
+
+\bibitem[{Wise {et~al.}(2007)Wise, McNamara, Nulsen, Houck, \&
+  David}]{Wise2007}
+Wise, M.~W., McNamara, B.~R., Nulsen, P. E.~J., Houck, J.~C., \& David, L.~P.
+  2007, ApJ, 659, 1153, \dodoi{10.1086/512630}
+
+\end{thebibliography}
