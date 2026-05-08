@@ -343,25 +343,25 @@ are the highest-priority observational requirements. Specifically:
 To validate our pipeline, we compare our outputs against published cavity power
 estimates for the Phoenix Cluster (Table~\ref{tab:litcomp}).
 
-\begin{deluxetable*}{lllll}
+\begin{deluxetable}{llllc}
 \tablecaption{Comparison with published cavity power estimates\label{tab:litcomp}}
 \tablehead{
-\colhead{Reference} & \colhead{Reported $\Pcav$} & \colhead{Age method} &
-\colhead{Matching model} & \colhead{Our value}
+\colhead{Reference} & \colhead{Reported $\Pcav$} & \colhead{Age} &
+\colhead{Model} & \colhead{Our $\Pcav$}
 }
 \startdata
 \citet{McDonald2015} &
-  ${\sim}1.0\,({+1.5}/{-0.4}) \times 10^{46}\;\erg\;\s^{-1}$ &
-  Buoyancy & Sph/Buoy & ${\sim}0.58 \times 10^{46}\;\erg\;\s^{-1}$ \\
+  $1.0^{+1.5}_{-0.4} \times 10^{46}$ &
+  Buoyancy & Sph/Buoy & $0.58 \times 10^{46}$ \\
 \citet{Hlavacek-Larrondo2015} &
-  ${\sim}2$--$7 \times 10^{45}\;\erg\;\s^{-1}$ &
-  Sound-crossing & Sph/Sound & ${\sim}4.0 \times 10^{45}\;\erg\;\s^{-1}$ \\
+  $2$--$7 \times 10^{45}$ &
+  Sound & Sph/Sound & $4.0 \times 10^{45}$ \\
 \citet{McDonald2019} &
-  ${\sim}10^{46}\;\erg\;\s^{-1}$ (order of magnitude) &
-  Review & All models bracket &
-  $0.25$--$1.25 \times 10^{46}\;\erg\;\s^{-1}$ \\
+  ${\sim}10^{46}$ (review) &
+  Mixed & All & $0.25$--$1.25 \times 10^{46}$ \\
 \enddata
-\end{deluxetable*}
+\tablecomments{Units are $\erg\;\s^{-1}$ throughout.}
+\end{deluxetable}
 
 Our spherical/buoyancy model is directly comparable to the \citet{McDonald2015}
 estimate. While our median value (${\sim}0.58 \times 10^{46}\;\erg\;\s^{-1}$) is
